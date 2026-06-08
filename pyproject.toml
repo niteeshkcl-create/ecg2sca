@@ -1,0 +1,24 @@
+[project]
+name = "ecg2sca"
+version = "0.1.0"
+description = "SCA Risk Prediction from GE MUSE XML ECG Files"
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "numpy",
+    "pandas",
+    "xmltodict",
+    "joblib",
+    "scikit-learn",
+    "biosppy",
+    "tensorflow",
+    "tensorflow-addons",
+    "peakutils"
+]
+
+[project.scripts]
+ecg2sca = "ecg2sca.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
