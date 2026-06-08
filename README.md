@@ -107,12 +107,5 @@ Place the binary on any workstation and run it exactly as the CLI above.
 ## 🤝 Contributing
 Feel free to open merge requests on the internal GitLab repo.  Please keep the lock file up‑to‑date and follow the existing coding style.
 
----
-
-## 📧 Contact
-For any issues, reach out to:
-- **Niteesh Kumar Soundra Pandian** – niteesh@uw.edu
-- **Patrick Boyle** – pmjboyle@uw.edu
-- **Matt Magoon** – mmagoon@uw.edu
 
 Happy predicting! 🎉
