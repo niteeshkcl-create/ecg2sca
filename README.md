@@ -94,13 +94,26 @@ uv lock            # refresh the lock file
 If you want to ship a completely self‑contained binary (no Python needed), you can use **PyInstaller**:
 
 ```bash
-# Inside the activated environment
+# Build the binary (requires PyInstaller)
+# 1️⃣ Activate the virtual environment you installed ECG2SCA into
+source ecg2sca_env/bin/activate
+
+# 2️⃣ Install PyInstaller if you haven't already
 pip install pyinstaller
+
+# 3️⃣ Build a single‑file executable
 pyinstaller --onefile -n ecg2sca ecg2sca/__main__.py
-# The binary will appear in ./dist/ecg2sca
+
+# 4️⃣ The binary will be created at ./dist/ecg2sca and can be copied to any machine.
 ```
 
-Place the binary on any workstation and run it exactly as the CLI above.
+> **NOTE**: The binary is *not* pre‑uploaded to the repository because it exceeds GitHub's file‑size limits. Users can build it locally following the steps above, or you can attach it to a GitHub Release once generated.
+
+Once you have built the binary, you can ship `dist/ecg2sca` to any workstation and run it exactly like the regular CLI:
+
+```bash
+./ecg2sca --input_file /path/to/file.xml --output_csv results.csv
+```
 
 ---
 
