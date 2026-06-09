@@ -90,30 +90,32 @@ uv lock            # refresh the lock file
 
 ---
 
-## 🏗️ Building a single‑file binary (optional)
-If you want to ship a completely self‑contained binary (no Python needed), you can use **PyInstaller**:
+## 🏗️ Stand‑alone binary (Git LFS)
+
+The compiled `ecg2sca` executable is stored in the repository via **Git LFS** at `bin/ecg2sca`. After cloning, ensure Git LFS is installed and run:
 
 ```bash
-# Build the binary (requires PyInstaller)
-# 1️⃣ Activate the virtual environment you installed ECG2SCA into
+git lfs install                # one‑time per user
+git pull                       # fetch the binary
+chmod +x bin/ecg2sca
+./bin/ecg2sca --help
+```
+
+If you prefer to build the binary yourself, you can still use PyInstaller:
+
+```bash
+# 1️⃣ Activate the virtual environment where ECG2SCA is installed
 source ecg2sca_env/bin/activate
 
-# 2️⃣ Install PyInstaller if you haven't already
+# 2️⃣ Install PyInstaller (if not already)
 pip install pyinstaller
 
-# 3️⃣ Build a single‑file executable
-pyinstaller --onefile -n ecg2sca ecg2sca/__main__.py
-
-# 4️⃣ The binary will be created at ./dist/ecg2sca and can be copied to any machine.
+# 3️⃣ Build the executable
+pyinstaller --onefile -n ecg2sca run_ecg2sca.py
+# The binary will appear in ./dist/ecg2sca
 ```
 
-> **NOTE**: The binary is *not* pre‑uploaded to the repository because it exceeds GitHub's file‑size limits. Users can build it locally following the steps above, or you can attach it to a GitHub Release once generated.
-
-Once you have built the binary, you can ship `dist/ecg2sca` to any workstation and run it exactly like the regular CLI:
-
-```bash
-./ecg2sca --input_file /path/to/file.xml --output_csv results.csv
-```
+The LFS‑tracked binary is the recommended way for distribution, as it avoids the GitHub file‑size limit and provides an immediate ready‑to‑run `ecg2sca`.
 
 ---
 
