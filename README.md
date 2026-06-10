@@ -117,14 +117,100 @@ chmod +x bin/ecg2sca
 
 - Model weights: The repository does not contain the trained VAE encoder or classifier weights by default. In our environment the models used during testing were located at:
 
-    - Encoder: `/gscratch/cardss/nksp2/ecgml/ml4h/model_zoo/ECG_PheWAS/encoder_median.h5`
-    - Classifier bundle: `/gscratch/cardss/nksp2/daklagwats/exp_1/lasso_logreg_bundle.joblib`
+ - Model weights: You can now store the trained VAE encoder and classifier bundle inside the repository under the `models/` directory. When present, the CLI will default to these paths:
 
-    You can provide local copies of these files and point the CLI to them using `--encoder_path` and `--bundle_path`.
+     - Encoder: `models/encoder_median.h5`
+     - Classifier bundle: `models/lasso_logreg_bundle.joblib`
+
+     If you prefer to use models from another location, pass `--encoder_path` and `--bundle_path` to the CLI.
 
 - For reproducible installs, a `requirements.txt` is provided in the repo; optionally generate a `uv.lock` using `uv lock` if you use `uv` for environment management.
 
 ---
+
+## Quick Install & Usage (for any computer)
+
+These steps make the package easy to use on another machine. Two main options are provided: install from source (recommended for development) or use the included standalone binary (recommended for simple deployments).
+
+1) Install from source (editable)
+
+```bash
+# create & activate virtualenv (Python >=3.9 recommended)
+python3.9 -m venv ecg2sca_env
+source ecg2sca_env/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
+pip install -e .
+```
+
+2) Use the prebuilt binary (no Python dependencies)
+
+```bash
+# After cloning the repository and fetching LFS objects
+git lfs install
+git pull
+chmod +x bin/ecg2sca
+./bin/ecg2sca --help
+```
+
+## Models included in this repository
+
+The repository contains a `models/` directory with the VAE encoder and classifier bundle tracked via Git LFS:
+
+- `models/encoder_median.h5` — VAE encoder (256-dim embedding)
+- `models/lasso_logreg_bundle.joblib` — classifier bundle (scaler, feature names, thresholds)
+
+By default the CLI will use these repo-local paths. To explicitly point to model files elsewhere, pass `--encoder_path` and `--bundle_path`.
+
+## Example: Run prediction on a single XML file (using repo-local weights)
+
+```bash
+# using the installed Python package
+ecg2sca --input_file /path/to/file.xml --output_csv /tmp/predictions.csv
+
+# or using the bundled binary
+./bin/ecg2sca --input_file /path/to/file.xml --output_csv /tmp/predictions.csv
+```
+
+If you want to explicitly reference the repo-local models, use:
+
+```bash
+ecg2sca \
+    --input_file /path/to/file.xml \
+    --output_csv /tmp/predictions.csv \
+    --encoder_path models/encoder_median.h5 \
+    --bundle_path models/lasso_logreg_bundle.joblib
+```
+
+## Example: Run predictions on a directory of XML files
+
+```bash
+ecg2sca --input_dir /path/to/xml_folder --output_csv /tmp/predictions_batch.csv
+```
+
+## Expected runtimes
+
+- CPU (single core): ~10–25 minutes per 12-lead XML file on a typical lab CPU (median observed ≈ 15–20 minutes). This includes median-beat extraction + encoder inference.
+- GPU: ~1–5 seconds per file (depends on GPU model). If a CUDA-capable GPU is present and you install the GPU build of TensorFlow, inference will be orders of magnitude faster.
+
+If you expect to process large batches, run jobs in parallel or use a GPU-enabled machine.
+
+## Git LFS and large files
+
+The models and the compiled binary are large files and are tracked with Git LFS in this repository. After cloning, fetch LFS objects with:
+
+```bash
+git lfs install
+git pull
+```
+
+If you plan to add/replace model weights or the binary, use Git LFS to track the file types (e.g., `*.h5`, `*.joblib`, and binary `bin/ecg2sca`).
+
+## Troubleshooting
+
+- If you see `Illegal instruction` or similar errors when importing TensorFlow, rebuild the virtual environment on that host and install the TensorFlow wheel compatible with the CPU/GPU of that machine.
+- If the models are missing after cloning, ensure you fetched LFS objects (`git lfs pull`) and that your Git client has LFS enabled.
+
 
 ./bin/ecg2sca --help
 ```
