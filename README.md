@@ -180,6 +180,16 @@ chmod +x bin/ecg2sca
 
 - For reproducible installs, a `requirements.txt` is provided in the repo; optionally generate a `uv.lock` using `uv lock` if you use `uv` for environment management.
 
+## Platform support
+
+This project and the provided prebuilt binary are targeted primarily for Linux (x86_64) environments and were developed and tested on Linux. Practical notes:
+
+- Linux: Recommended and supported. The included `bin/ecg2sca` binary and tested Python environment use Linux-compatible TensorFlow wheels and run reliably on common lab Linux servers.
+- macOS: Not guaranteed. TensorFlow on macOS (especially Apple Silicon) requires special wheels or a conda-based install; the encoder `.h5` deserialization and native binary may fail on macOS without careful environment setup. If you must use macOS, prefer creating a Python 3.9 conda environment and follow TensorFlow's macOS install guide.
+- Windows: Untested. Windows support for TensorFlow varies by version and hardware; we cannot guarantee the packaged binary or the Python code will work on Windows without additional testing and possibly different TensorFlow wheels.
+
+If you plan to run at scale or on non-Linux hosts, we recommend running the `--self_test` check first and installing the exact versions listed in the requirements section.
+
 ### Required versions (recommended)
 
 To avoid Keras/TensorFlow deserialization and CPU incompatibility issues, we recommend the following versions for most users:
