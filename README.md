@@ -180,6 +180,24 @@ chmod +x bin/ecg2sca
 
 - For reproducible installs, a `requirements.txt` is provided in the repo; optionally generate a `uv.lock` using `uv lock` if you use `uv` for environment management.
 
+### Required versions (recommended)
+
+To avoid Keras/TensorFlow deserialization and CPU incompatibility issues, we recommend the following versions for most users:
+
+```
+Python==3.9.*
+tensorflow==2.12.1
+tensorflow-addons==0.19.0   # optional but recommended (Mish activation)
+pandas==1.5.*
+scikit-learn==1.2.*
+biosppy
+xmltodict
+joblib
+uv    # optional, for lockfiles
+```
+
+If you're using macOS/Apple Silicon, install TensorFlow following the official instructions for your platform (or use `conda` to simplify binary compatibility).
+
 ---
 
 ## Quick Install & Usage (for any computer)
@@ -265,6 +283,27 @@ If you plan to add/replace model weights or the binary, use Git LFS to track the
 - If you see `Illegal instruction` or similar errors when importing TensorFlow, rebuild the virtual environment on that host and install the TensorFlow wheel compatible with the CPU/GPU of that machine.
 - If the models are missing after cloning, ensure you fetched LFS objects (`git lfs pull`) and that your Git client has LFS enabled.
 
+Common error: "Could not interpret activation function identifier: Addons>mish"
+
+- Cause: The saved encoder HDF5 references the Mish activation from `tensorflow_addons`. If `tensorflow_addons` is not installed or the Keras/TensorFlow versions mismatch, deserialization can fail with this message.
+- Quick fixes:
+
+```bash
+# Preferred: install the matching addon package
+pip install tensorflow-addons==0.19.0
+
+# Use the CLI self-test to inspect your environment without loading the full encoder
+ecg2sca --self_test
+
+# To attempt loading the encoder (may be slow) during self-test
+ecg2sca --self_test --run_encoder_load
+```
+
+Notes: The code includes a fallback that maps `Addons>mish` to a local Mish implementation when `tensorflow_addons` is absent. Installing the addon with the recommended versions is still the most robust solution.
+
+Other TF/Keras incompatibilities
+
+- If you see errors related to Keras 3 or TensorFlow 2.20 when loading `.h5` models, use `tensorflow==2.12.1` as the safest version for deserializing legacy HDF5 model artifacts included here.
 
 ./bin/ecg2sca --help
 ```
