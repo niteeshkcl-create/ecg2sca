@@ -237,11 +237,23 @@ By default the CLI will use these repo-local paths. To explicitly point to model
 ## Example: Run prediction on a single XML file (using repo-local weights)
 
 ```bash
-# using the installed Python package
-ecg2sca --input_file /path/to/file.xml --output_csv /tmp/predictions.csv
+# using the installed Python package (relative paths; repo-local model files)
+ecg2sca \
+    --input_file examples/dummy_rhythm.xml \
+    --output_csv /tmp/predictions.csv \
+    --encoder_path models/encoder_median.h5 \
+    --bundle_path models/lasso_logreg_bundle.joblib
 
-# or using the bundled binary
-./bin/ecg2sca --input_file /path/to/file.xml --output_csv /tmp/predictions.csv
+# or using the bundled binary (no Python deps)
+./bin/ecg2sca \
+    --input_file examples/dummy_rhythm.xml \
+    --output_csv /tmp/predictions.csv \
+    --encoder_path models/encoder_median.h5 \
+    --bundle_path models/lasso_logreg_bundle.joblib
+
+# Model weights referenced above:
+#  - models/encoder_median.h5  (encoder VAE, ~21 MB)
+#  - models/lasso_logreg_bundle.joblib  (classifier bundle, ~23 KB)
 ```
 
 If you want to explicitly reference the repo-local models, use:
