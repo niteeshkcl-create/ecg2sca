@@ -98,6 +98,34 @@ The compiled `ecg2sca` executable is stored in the repository via **Git LFS** 
 git lfs install                # one‑time per user
 git pull                       # fetch the binary
 chmod +x bin/ecg2sca
+
+---
+
+## Deployment notes
+
+- CPU vs GPU: The CLI runs on CPU by default and is fully functional (but slower). If a GPU is available, install GPU-enabled TensorFlow and run on GPU for much faster inference. Example (recommended for GPU machines):
+
+    ```bash
+    pip install tensorflow==2.12.1 tensorflow-addons==0.19.0
+    ```
+
+    If you prefer CPU-only usage (works on any machine):
+
+    ```bash
+    pip install tensorflow==2.12.1 tensorflow-addons==0.19.0
+    ```
+
+- Model weights: The repository does not contain the trained VAE encoder or classifier weights by default. In our environment the models used during testing were located at:
+
+    - Encoder: `/gscratch/cardss/nksp2/ecgml/ml4h/model_zoo/ECG_PheWAS/encoder_median.h5`
+    - Classifier bundle: `/gscratch/cardss/nksp2/daklagwats/exp_1/lasso_logreg_bundle.joblib`
+
+    You can provide local copies of these files and point the CLI to them using `--encoder_path` and `--bundle_path`.
+
+- For reproducible installs, a `requirements.txt` is provided in the repo; optionally generate a `uv.lock` using `uv lock` if you use `uv` for environment management.
+
+---
+
 ./bin/ecg2sca --help
 ```
 
