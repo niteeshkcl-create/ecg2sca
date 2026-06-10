@@ -14,12 +14,25 @@ log = logging.getLogger("ecg2sca.predict")
 def load_encoder(encoder_path: str):
     import tensorflow as tf
     from tensorflow.keras.models import load_model
+    # Provide a Mish activation mapping so legacy HDF5 models that reference
+    # Addons>mish or Mish can be deserialized even if tensorflow_addons
+    # is not installed on the host. Prefer the tfa implementation when
+    # available, otherwise provide a lightweight local fallback.
+    custom_objects = {}
     try:
         import tensorflow_addons as tfa
-        from tensorflow.keras.utils import get_custom_objects
-        get_custom_objects()["Mish"] = tfa.activations.mish
-    except ImportError:
-        log.warning("tensorflow_addons not found; Mish activation may fail.")
+        mish_impl = tfa.activations.mish
+        log.info("tensorflow_addons available; using tfa.activations.mish")
+    except Exception:
+        import tensorflow as _tf
+        log.warning("tensorflow_addons not found; using local Mish fallback.")
+        def mish_impl(x):
+            return x * _tf.math.tanh(_tf.math.softplus(x))
+
+    # map common identifiers saved in older models to the implementation
+    custom_objects["Addons>mish"] = mish_impl
+    custom_objects["Mish"] = mish_impl
+    custom_objects["mish"] = mish_impl
     # Limit TF threading to avoid pthread creation failures on constrained nodes
     tf.config.threading.set_intra_op_parallelism_threads(1)
     tf.config.threading.set_inter_op_parallelism_threads(1)
@@ -29,7 +42,13 @@ def load_encoder(encoder_path: str):
     except Exception:
         pass
 
-    encoder = load_model(encoder_path)
+    # Load model with custom_objects to ensure deserialization succeeds
+    try:
+        encoder = load_model(encoder_path, custom_objects=custom_objects)
+    except Exception as e:
+        log.error(f"Failed to load encoder with custom_objects: {e}")
+        # Last resort: try loading without custom objects to surface original error
+        encoder = load_model(encoder_path)
     log.info(f"Encoder loaded: input={encoder.input_shape}, output={encoder.output_shape}")
     return encoder
 
