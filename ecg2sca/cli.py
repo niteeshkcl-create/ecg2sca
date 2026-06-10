@@ -47,15 +47,58 @@ Examples:
   ecg2sca --input_file /path/to/file.xml --output_csv pred.csv
         """,
     )
-    group = parser.add_mutually_exclusive_group(required=True)
+    group = parser.add_mutually_exclusive_group(required=False)
     group.add_argument("--input_dir", type=str, help="Directory containing ECG files (XML or CSV)")
     group.add_argument("--input_file", type=str, help="Path to a single ECG file (XML or CSV)")
+    parser.add_argument("--self_test", action="store_true", help="Run quick self-check (models present, TF/TFA imports) and exit")
+    parser.add_argument("--run_encoder_load", action="store_true", help="(Optional) during --self_test, attempt to load encoder (may be slow)")
 
     parser.add_argument("--output_csv", type=str, required=True, help="Output CSV path for predictions")
     parser.add_argument("--encoder_path", type=str, default=DEFAULT_ENCODER_PATH, help="Path to encoder_median.h5")
     parser.add_argument("--bundle_path", type=str, default=DEFAULT_BUNDLE_PATH, help="Path to lasso_logreg_bundle.joblib")
 
     args = parser.parse_args()
+
+
+def self_test(encoder_path: str, bundle_path: str, run_encoder: bool = False) -> dict:
+    """Run lightweight self checks (files present, TF/TFA import). If
+    `run_encoder` is True, attempt to load the encoder (can be slow).
+    Returns a dict of results.
+    """
+    results = {}
+    results["encoder_file_exists"] = os.path.isfile(encoder_path)
+    results["bundle_file_exists"] = os.path.isfile(bundle_path)
+    # Try importing tensorflow and tensorflow_addons
+    try:
+        import tensorflow as tf
+        results["tensorflow"] = tf.__version__
+    except Exception as e:
+        results["tensorflow"] = f"IMPORT_ERROR: {e}"
+    try:
+        import tensorflow_addons as tfa
+        results["tensorflow_addons"] = getattr(tfa, "__version__", "installed")
+    except Exception as e:
+        results["tensorflow_addons"] = f"NOT_INSTALLED: {e}"
+
+    if run_encoder and results.get("encoder_file_exists"):
+        try:
+            enc = load_encoder(encoder_path)
+            results["encoder_input_shape"] = getattr(enc, "input_shape", None)
+            results["encoder_output_shape"] = getattr(enc, "output_shape", None)
+        except Exception as e:
+            results["encoder_load_error"] = str(e)
+
+    return results
+
+    # If self_test requested, run and exit
+    if args.self_test:
+        results = self_test(args.encoder_path, args.bundle_path, run_encoder=args.run_encoder_load)
+        # Pretty print results
+        print("\nECG2SCA self_test results:\n")
+        for k, v in results.items():
+            print(f"  {k}: {v}")
+        print("")
+        return
 
     # Resolve file list
     if args.input_file:
@@ -64,7 +107,7 @@ Examples:
             sys.exit(1)
         paths = [args.input_file]
     else:
-        if not os.path.isdir(args.input_dir):
+        if not args.input_dir or not os.path.isdir(args.input_dir):
             log.error(f"Directory not found: {args.input_dir}")
             sys.exit(1)
         paths = sorted([
