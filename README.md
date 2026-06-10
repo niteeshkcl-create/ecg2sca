@@ -28,6 +28,60 @@ pip install -e /path/to/ecg2sca_pkg   # installs the CLI entry point `ecg2sca`
 
 ---
 
+## 🐣 Beginner Quickstart (step‑by‑step)
+
+If you're new to this repo and want a minimal, copy‑paste set of commands that will get you from cloning to a working prediction, follow these exact steps.
+
+1) Clone the repository and fetch LFS objects
+
+```bash
+git clone https://github.com/niteeshkcl-create/ecg2sca.git
+cd ecg2sca
+git lfs install         # one‑time per account on this machine
+git lfs pull            # fetch large model and binary files tracked by LFS
+```
+
+2) Create and activate a Python virtual environment (Python 3.9 recommended)
+
+```bash
+python3.9 -m venv ecg2sca_env
+source ecg2sca_env/bin/activate
+python -m pip install --upgrade pip
+```
+
+3) Install dependencies and the package
+
+```bash
+pip install -r requirements.txt
+pip install -e .
+```
+
+4) Verify models are present (repo‑local defaults)
+
+```bash
+ls -l models/encoder_median.h5 models/lasso_logreg_bundle.joblib
+# If the files are absent, re-run `git lfs pull` or contact the repo owner
+```
+
+5) Run an example prediction (single XML)
+
+```bash
+ecg2sca --input_file /path/to/example.xml --output_csv /tmp/predictions.csv
+# or use the included binary (no Python deps):
+./bin/ecg2sca --input_file /path/to/example.xml --output_csv /tmp/predictions.csv
+```
+
+6) Inspect the output
+
+```bash
+head -n 5 /tmp/predictions.csv
+```
+
+If you see CSV with the columns described in this README, the pipeline worked.
+
+---
+
+
 ## 📖 Usage examples
 
 ### Process a single XML file
